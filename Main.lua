@@ -16,29 +16,20 @@ local Window = Library:CreateWindow({
 local MobileButton = Instance.new("ScreenGui")
 local Button = Instance.new("TextButton")
 local Corner = Instance.new("UICorner")
-
 MobileButton.Name = "UniversalToggle"
 MobileButton.Parent = game:GetService("CoreGui")
-MobileButton.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-
 Button.Parent = MobileButton
 Button.BackgroundColor3 = Color3.fromRGB(125, 0, 255)
-Button.BorderSizePixel = 0
 Button.Position = UDim2.new(0, 10, 0.5, -25)
 Button.Size = UDim2.new(0, 50, 0, 50)
-Button.Font = Enum.Font.SourceSansBold
 Button.Text = "A"
 Button.TextColor3 = Color3.fromRGB(255, 255, 255)
 Button.TextSize = 25
 Button.Draggable = true
 Button.Active = true
-
 Corner.CornerRadius = UDim.new(0, 12)
 Corner.Parent = Button
-
-Button.MouseButton1Click:Connect(function()
-    Library:Toggle()
-end)
+Button.MouseButton1Click:Connect(function() Library:Toggle() end)
 
 local Tabs = {
     Main = Window:AddTab("Combat"),
@@ -68,7 +59,6 @@ MiscBox:AddToggle("FastShoot", { Text = "Fast Fire Rate", Default = false })
 
 local SettingsBox = Tabs.Misc:AddRightGroupbox("Settings")
 SettingsBox:AddLabel("Menu Bind"):AddKeyPicker("MenuKey", { Default = "F3", NoUI = true, Text = "Menu Keybind" })
-
 Library.ToggleKeybind = Library.Options.MenuKey
 
 ThemeManager:SetLibrary(Library)
@@ -106,6 +96,38 @@ local function GetClosestTarget()
     return closest
 end
 
+task.spawn(function()
+    while task.wait(0.5) do
+        pcall(function()
+            local ItemLib = require(game:GetService("ReplicatedStorage").Modules.ItemLibrary)
+            local Items = rawget(ItemLib, "Items")
+            if Items then
+                for _, item in pairs(Items) do
+                    local n = (item.Name or ""):lower()
+                    local isFast = n:find("dagger") or n:find("sword") or n:find("knife")
+                    local isProjectile = n:find("bow") or n:find("sling") or n:find("sniper") or n:find("gun")
+                    
+                    if Library.Toggles.AntiReload.Value then
+                        item.ReloadLength = 0
+                        item.ReloadTime = 0
+                        item.ReloadSpeed = 1000
+                        item.ChargeTime = 0
+                        item.WindUp = 0
+                        item.DrawTime = 0 
+                    end
+                    
+                    if Library.Toggles.FastShoot.Value then
+                        item.AttackInterval = (isFast and 0.1 or 0)
+                        item.FireRate = 5000
+                        item.Cooldown = (isFast and 0.1 or 0)
+                        if isProjectile then item.ShotDelay = 0 end
+                    end
+                end
+            end
+        end)
+    end
+end)
+
 RunService.Heartbeat:Connect(function(dt)
     if not root or isReturning then return end
     tickCounter = (tickCounter + 1) % 10
@@ -116,7 +138,7 @@ RunService.Heartbeat:Connect(function(dt)
         for _, proj in ipairs(workspace:GetChildren()) do
             if proj:IsA("BasePart") then
                 local n = proj.Name:lower()
-                if n:find("bullet") or n:find("arrow") or n:find("projectile") then
+                if n:find("bullet") or n:find("arrow") or n:find("projectile") or n:find("bolt") then
                     if math.random(1, 100) <= Library.Options.HitRate.Value then
                         proj.CFrame = target.CFrame
                         proj.Velocity = Vector3.new(0, 0, 0)
@@ -147,3 +169,5 @@ RunService.Heartbeat:Connect(function(dt)
         end
     end
 end)
+
+Library:Notify("Azoxx-Lua")
