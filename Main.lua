@@ -13,6 +13,33 @@ local Window = Library:CreateWindow({
     Size = UDim2.new(0, 550, 0, 600),
 })
 
+local MobileButton = Instance.new("ScreenGui")
+local Button = Instance.new("TextButton")
+local Corner = Instance.new("UICorner")
+
+MobileButton.Name = "UniversalToggle"
+MobileButton.Parent = game:GetService("CoreGui")
+MobileButton.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+Button.Parent = MobileButton
+Button.BackgroundColor3 = Color3.fromRGB(125, 0, 255)
+Button.BorderSizePixel = 0
+Button.Position = UDim2.new(0, 10, 0.5, -25)
+Button.Size = UDim2.new(0, 50, 0, 50)
+Button.Font = Enum.Font.SourceSansBold
+Button.Text = "A"
+Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+Button.TextSize = 25
+Button.Draggable = true
+Button.Active = true
+
+Corner.CornerRadius = UDim.new(0, 12)
+Corner.Parent = Button
+
+Button.MouseButton1Click:Connect(function()
+    Library:Toggle()
+end)
+
 local Tabs = {
     Main = Window:AddTab("Combat"),
     Movement = Window:AddTab("Movement"),
@@ -38,6 +65,11 @@ OrbitBox:AddSlider("OrbitDistance", { Text = "Distance", Default = 15, Min = 5, 
 local MiscBox = Tabs.Misc:AddLeftGroupbox("Weapons")
 MiscBox:AddToggle("AntiReload", { Text = "Instant Reload", Default = false })
 MiscBox:AddToggle("FastShoot", { Text = "Fast Fire Rate", Default = false })
+
+local SettingsBox = Tabs.Misc:AddRightGroupbox("Settings")
+SettingsBox:AddLabel("Menu Bind"):AddKeyPicker("MenuKey", { Default = "F3", NoUI = true, Text = "Menu Keybind" })
+
+Library.ToggleKeybind = Library.Options.MenuKey
 
 ThemeManager:SetLibrary(Library)
 SaveManager:SetLibrary(Library)
